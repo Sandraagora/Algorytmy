@@ -1,0 +1,75 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <limits>
+#include <iomanip>
+
+using namespace std;
+
+#define INT_MAX numeric_limits<int>::max()
+
+#define V 9  
+
+vector<string> Miasta = { "Butynga", "Klajpeda", "Kowno", "Mariampol", "Poniewiez",
+                          "Szawie", "Taurogi", "Uciana", "Wilno" };
+
+int Minimum(int key[], bool mstSet[])
+{
+    int min = INT_MAX;
+    int minIndeks;
+
+    for (int v = 0; v < V; v++)
+        if (mstSet[v] == false && key[v] < min)
+            min = key[v], minIndeks = v;
+
+    return minIndeks;
+}
+
+void PokazMST(int rodzic[], int graf[V][V], int lewo, int prawo )
+{
+    cout << setw(16) << "Polaczenie:" << "   " << setw(14) << "Dystans:" << endl << endl;
+    for (int i = 1; i < V; i++)
+        cout << setw(10) << prawo << Miasta[rodzic[i]] << " - " << setw(10) << lewo << Miasta[i] << setw(10) << prawo << graf[i][rodzic[i]] << endl;
+}
+
+void Prima(int graf[V][V])
+{
+ 
+    int rodzic[V];
+    int key[V];
+    bool mstSet[V];
+    for (int i = 0; i < V; i++)
+        key[i] = INT_MAX, mstSet[i] = false;
+    key[0] = 0;
+    rodzic[0] = -1;
+    for (int count = 0; count < V - 1; count++)
+    {
+        int u = Minimum(key, mstSet);
+        mstSet[u] = true;
+
+        for (int v = 0; v < V; v++)
+            if (graf[u][v] && mstSet[v] == false && graf[u][v] < key[v])
+                rodzic[v] = u, key[v] = graf[u][v];
+    }
+
+    PokazMST(rodzic, graf);
+}
+
+
+int main()
+{
+                              B   Kl   Ko    M    P    S    T    U    W
+    int graf[V][V] = {    {   0,   0,   0,   0,   0, 148,   0,   0,   0},
+                          {   0,   0,   0,   0,   0, 155, 100,   0,   0},
+                          {   0,   0,   0,  57,   0,   0, 145,   0, 110},
+                          {   0,   0,  57,   0,   0,   0,   0,   0, 136},
+                          {   0,   0,   0,   0,   0,  80,   0,  93,   0},
+                          { 148, 155, 145,   0,  80,   0, 102,   0,   0},
+                          {   0, 100,   0,   0,   0, 102,   0,   0,   0},
+                          {   0,   0,   0,   0,  93,   0,   0,   0,  97},
+                          {   0, 136, 110,   0,   0,   0,   0,  97,   0} };
+
+    Prima(graf);
+
+    return 0;
+}

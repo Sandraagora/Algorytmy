@@ -1,0 +1,168 @@
+#include <iostream>
+#include <algorithm>
+
+using namespace std;
+
+enum Miasta 
+{
+    Butynga, Klajpeda, Kowno, Mariampol, Poniwiez, Szawie, Taurogi, Uciana, Wilno
+};
+
+class krawedz 
+{
+public:
+    int src, dest, weight;
+};
+
+class Graf 
+{
+public:
+    int X, Y;
+    krawedz* Krawedz;
+};
+
+Graf* StworzGraf(int X, int Y)
+{
+    Graf* graf = new Graf;
+    graf->X = X;
+    graf->Y = Y;
+
+    graf->Krawedz = new krawedz[Y];
+
+    return graf;
+}
+
+class subset {
+public:
+    int rodzic;
+    int rank;
+};
+
+int Szukaj(subset Podzbiory[], int i)
+{
+    if (Podzbiory[i].rodzic != i)
+        Podzbiory[i].rodzic
+        = Szukaj(Podzbiory, Podzbiory[i].rodzic);
+
+    return Podzbiory[i].rodzic;
+}
+
+void Union(subset Podzbiory[], int x, int y)
+{
+    int xroot = Szukaj(Podzbiory, x);
+    int yroot = Szukaj(Podzbiory, y);
+
+    if (Podzbiory[xroot].rank < Podzbiory[yroot].rank)
+        Podzbiory[xroot].rodzic = yroot;
+    else if (Podzbiory[xroot].rank > Podzbiory[yroot].rank)
+        Podzbiory[yroot].rodzic = xroot;
+    else {
+        Podzbiory[yroot].rodzic = xroot;
+        Podzbiory[xroot].rank++;
+    }
+}
+
+int Moj(const void* a, const void* b)
+{
+    krawedz* a1 = (krawedz*)a;
+    krawedz* b1 = (krawedz*)b;
+    return a1->weight > b1->weight;
+}
+
+void Kruskal(Graf * graf)
+{
+    int X = graf->X;
+    krawedz result[X];
+    int i = 0;
+    int e = 0;
+
+    qsort(graf->Krawedz, graf->Y, sizeof(graf->Krawedz[0]),
+        Moj);
+
+    subset* Podzbiory = new subset[(X * sizeof(subset))];
+    for (int v = 0; v < X; ++v)
+    {
+        Podzbiory[v].rodzic = v;
+        Podzbiory[v].rank = 0;
+    }
+
+    while (e < X - 1 && i < graf->Y)
+    {                
+        krawedz NastepnaKrawedz = graf->Krawedz[i++];
+
+        int x = Szukaj(Podzbiory, NastepnaKrawedz.src);
+        int y = Szukaj(Podzbiory , NastepnaKrawedz.dest);
+
+        if (x != y) {
+            result[e++] = NastepnaKrawedz;
+            Union(Podzbiory, x, y);
+        }
+    }
+
+    cout << "Poniżej znajdują się krawędzie w konstrukcji "
+        "MST\n";
+    int Minimum = 0;
+    for (i = 0; i < e; ++i)
+    {
+        cout << result[i].src << " -- " << result[i].dest
+            << " == " << result[i].weight << endl;
+       Minimum = Minimum + result[i].weight;
+    }
+    cout << " Drzewo rozpinające minimalnych kosztów: " << Minimum
+        << endl;
+}
+
+int main()
+{
+    int X = 9;
+    int Y = 10; 
+    Graf* graf = StworzGraf(X, Y);
+
+    graf->Krawedz[0].src = Miasta::Butynga;
+    graf->Krawedz[0].dest = Miasta::Szawie;
+    graf->Krawedz[0].weight = 148;
+    
+    graf->Krawedz[1].src = Miasta::Klajpeda;
+    graf->Krawedz[1].dest = Miasta::Szawie;
+    graf->Krawedz[1].weight = 155;
+
+    graf->Krawedz[2].src = Miasta::Taurogi;
+    graf->Krawedz[2].dest = Miasta::Szawie;
+    graf->Krawedz[2].weight = 102;
+
+    graf->Krawedz[3].src = Miasta::Kowno;
+    graf->Krawedz[3].dest = Miasta::Szawie;
+    graf->Krawedz[3].weight = 145;
+
+    graf->Krawedz[4].src = Miasta::Poniwiez;
+    graf->Krawedz[4].dest = Miasta::Szawie;
+    graf->Krawedz[4].weight = 80;
+
+    graf->Krawedz[5].src = Miasta::Klajpeda;
+    graf->Krawedz[5].dest = Miasta::Taurogi;
+    graf->Krawedz[5].weight = 100;
+
+    graf->Krawedz[6].src = Miasta::Poniwiez;
+    graf->Krawedz[6].dest = Miasta::Uciana;
+    graf->Krawedz[6].weight = 93;
+
+    graf->Krawedz[7].src = Miasta::Uciana;
+    graf->Krawedz[7].dest = Miasta::Wilno;
+    graf->Krawedz[7].weight = 97;
+
+    graf->Krawedz[8].src = Miasta::Wilno;
+    graf->Krawedz[8].dest = Miasta::Kowno;
+    graf->Krawedz[8].weight = 110;
+
+    graf->Krawedz[9].dest = Miasta::Wilno;
+    graf->Krawedz[9].src = Miasta::Mariampol;
+    graf->Krawedz[9].weight = 136;
+
+    graf->Krawedz[9].dest = Miasta::Kowno;
+    graf->Krawedz[9].src = Miasta::Mariampol;
+    graf->Krawedz[9].weight = 57;
+
+    Kruskal(graf);
+
+    return 0;
+}
